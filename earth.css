@@ -1,0 +1,17 @@
+canvas {
+    border: 2px solid black;
+    background-color: black;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    padding: 
+}
+
+.controls {
+    margin-left: 16px;
+}
+video {
+    display: none;
+}

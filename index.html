@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>3D Earth Globe</title>
+    <link rel="stylesheet" href="earth.css" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
+        integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ=="
+        crossorigin="anonymous" defer>
+    </script>
+<!--    <script src="https://twgljs.org/dist/4.x/twgl-full.min.js"></script> -->
+    <script src="earth.js" defer></script>
+</head>
+
+<body>
+    <div class="container">
+        <canvas id="glcanvas" width="256" height="256"></canvas>
+        <canvas hidden id="hiddencanvas" width="0" height="0"></canvas>
+        <div class="controls">
+            <h3>Rendering</h3>
+            <select id="drawMode">
+                <option disabled selected>Draw mode</option>
+                <option value="TRIANGLES">Triangles *</option>
+                <option value="TILES_GRID">Colored Tiles</option>
+            
+                <option value="POINTS">Points</option>
+                <option value="LINES">Lines</option>
+                <option value="LINE_STRIP">Line Strip</option>
+                <option value="LINE_LOOP">Line Loop</option>
+                <option value="TRIANGLE_STRIP">Triangle Strip</option>
+                <option value="TRIANGLE_FAN">Triangle Fan</option>
+            </select>
+            <span>* denotes default values</span>
+            <br>
+            <div class="sliderGroup">
+                <input type="text" id="sliderMinVertexZoomText" disabled />
+                <input type="range" id="sliderMinVertexZoom" min="2" max="7" step="1" />
+            </div>
+            <div class="sliderGroup">
+                <input type="text" id="sliderVertexSpiralText" disabled />
+                <input type="range" id="sliderVertexSpiral" min="1" max="4" step="1" />
+            </div>
+            
+            
+            <h3>Zoom / Distance</h3>
+            <div class="">
+                Sync zooms <input type="checkbox" id="syncZoom" checked />
+            </div>
+            
+            <div class="sliderGroup">
+                <input type="text" id="sliderEyePosText" disabled />
+                <input type="range" id="sliderEyePos" min="0" max="20" step="0.01" />
+            </div>
+            
+            <div class="sliderGroup">
+                <input type="text" id="sliderVertexZoomText" disabled />
+                <input type="range" id="sliderVertexZoom" min="2" max="20" step="1" />
+            </div>
+            <div class="sliderGroup">
+                <input type="text" id="sliderTextureZoomText" disabled />
+                <input type="range" id="sliderTextureZoom" min="0" max="18" step="1" />
+            </div>
+            
+            
+            <h3>Camera</h3>
+            <div class="sliderGroup">
+                <input type="text" id="sliderEyeAngleText" disabled />
+                <!-- <input type="range" id="sliderEyeAngle" min="0" max="1" step="0.05" value="0" />-->
+                <input type="range" id="sliderEyeAngle" min="0" max="89" step="1" value="0" />
+            </div>
+            
+            <div class="sliderGroup">
+                <input type="text" id="latText" disabled />
+                <input type="text" id="sliderRotLatSpeedText" disabled />
+                <input type="range" id="sliderRotLatSpeed" min="0" max="10" step="0.1" />
+            </div>
+            
+            <div class="sliderGroup">
+                <input type="text" id="lonText" disabled />
+                <input type="text" id="sliderRotLonSpeedText" disabled />
+                <input type="range" id="sliderRotLonSpeed" min="0" max="10" step="0.1" />
+            </div>
+
+            <div class="sliderGroup">
+                <input type="text" id="sliderFOVAngleText" disabled />
+                <input type="range" id="sliderFOVAngle" min="5" max="175" step="5" />
+            </div>
+       
+            <h3>Target (center)</h3>
+            <div>
+                <input type="text" id="targetLatText" disabled />
+                <input type="text" id="targetLonText" disabled />
+                <input type="text" id="targetDistText" disabled />
+            </div>
+            <div>
+                <input type="text" id="targetTileZoomText" disabled />
+                <input type="text" id="targetTileXText" disabled />
+                <input type="text" id="targetTileYText" disabled />
+            </div>
+            <div>
+                <input type="text" id="targetProjDistText" disabled />
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

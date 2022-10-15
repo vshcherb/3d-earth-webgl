@@ -779,11 +779,14 @@ function findPixelPerfectCameraHeightForZoom(zoom, fov, lat, lon) {
 
 function findPixelPerfectZoomForCamHeight(zoom, fov, lat, lon, height) {
     // Use Newton method to not calculate reverse
+    // !!! This function is not continuous so newton method doesn't work perfectly (it would be continous for flat earth)
+    let maxIterations = 1000;
     let calcZoom = zoom;
     let hVal = findPixelPerfectCameraHeightForZoom(calcZoom, fov, lat, lon) - height;
     let calcZoomNext = calcZoom;
     let hValNext = hVal;
-    while (Math.abs(hValNext) > 0.01) {
+    
+    while (Math.abs(hValNext) > 0.01 && maxIterations-- > 0) {
         let newCalcZoom;
         if (calcZoomNext == calcZoom) {
             newCalcZoom = calcZoom + (hValNext > height ? 0.5 : -0.5);
@@ -794,6 +797,10 @@ function findPixelPerfectZoomForCamHeight(zoom, fov, lat, lon, height) {
         calcZoom = calcZoomNext;
         calcZoomNext = newCalcZoom;
         hValNext = findPixelPerfectCameraHeightForZoom(calcZoomNext, fov, lat, lon) - height;
+    }
+    if (maxIterations <= 0) {
+        console.log(`Perfect zoom wasn't found for findPixelPerfectZoomForCamHeight(${zoom}, ${fov}, ${lat}, ${lon}, ${height}) z - ${calcZoomNext}: `+
+            findPixelPerfectCameraHeightForZoom(Math.round(calcZoomNext), fov, lat, lon) + ' != ' + findPixelPerfectCameraHeightForZoom(Math.round(calcZoomNext)-0.0001, fov, lat, lon));
     }
     return calcZoomNext;
 }
@@ -898,6 +905,7 @@ function addListeners() {
             CONFIG.cameraLon += (mouseCoords[0] - newCoords[0]) * CONFIG.cameraHeight / 400; 
             updateTargetLocWithGivenCamera();
 
+            // this function could give non perfect zoom for the camera height cause it's potentiall doesn't exist
             CONFIG.cameraZoom = findPixelPerfectZoomForCamHeight(CONFIG.cameraZoom, CONFIG.fieldOfView, CONFIG.cameraLat, CONFIG.cameraLon, CONFIG.targetDist);
             camZoom.value = CONFIG.cameraZoom;
             

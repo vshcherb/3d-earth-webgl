@@ -1,15 +1,14 @@
 // +   TODO device independent constant vs pixel-perfect - check!
-// +   TODO proper tile scale
 // + ? TODO autochange cam height on panning (different projection)
-// TODO LOD of details setting!
 
+// TODO LOD of details setting!
 // TODO precise drag/drop movements 
-// TODO Hangs around poles
 // TODO autoload tiles on tilt / on pan
+// TODO Day/night shadow on Earth
 
 // TODO Ellipse earth: 1) getDistance 2) problem with rotation (camera height)
 // TODO holes between inequal tiles (should be rectangular network)
-// TODO Day/night shadow on Earth
+// TODO: think about pixel perfect zoom doesn't exist on poles (console.log)
 
 // ! OPENGL allows only texture power of 2 !
 const TilesCanvasSize = 8; // 8 -> 7x7 (1st row taken by ice / empty)
@@ -895,7 +894,10 @@ function addListeners() {
         mousedown = true;
         mouseCoords = getClippedCoords(e);
     });
-    canvas.addEventListener('mouseup', (e) => {
+    canvas.addEventListener('mouseup', () => {
+        mousedown = false;
+    });
+    canvas.addEventListener('mouseout', () => {
         mousedown = false;
     });
     canvas.addEventListener('mousemove', (e) => {

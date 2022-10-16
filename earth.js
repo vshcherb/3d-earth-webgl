@@ -1,10 +1,11 @@
-// +   TODO device independent constant vs pixel-perfect - check!
-// + ? TODO autochange cam height on panning (different projection)
+// +   TODO device independent constant vs pixel-perfect - check ?
+// + ? TODO autochange cam height on panning (different projection) ???
 // TODO Drag/drop: 1) Click is inprecise 2) add camera angle 
 
 // TODO LOD of details setting!
 // TODO autoload tiles on tilt / on pan
 // TODO Day/night shadow on Earth
+// TODO allow to rotate camera
 
 // TODO Ellipse earth: 1) getDistance 2) problem with rotation (camera height)
 // TODO holes between inequal tiles (should be rectangular network)
@@ -882,26 +883,26 @@ function addListeners() {
     let mouseCoords, mouseClickCenter, mousedown = false;
     const canvas = document.querySelector("#glcanvas");
     function getClippedCoords(e) {
-        // [-1, -1] x [1 , 1]
+        // [r, angle] - r in [0, sqrt(2)]
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         const clipX = x / rect.width * 2 - 1;
         const clipY = y / rect.height * 2 - 1;
-        return [clipX, clipY];
+        return [Math.sqrt(clipX * clipX + clipY * clipY), clipX == 0 && clipY == 0 ? 0 : 
+                            Math.atan2(clipX, clipY)];
     }
 
     function getDiffLatLonFromCoords(coords)  {
-        let xang = Math.atan(coords[0] * Math.tan(CONFIG.fieldOfView * Math.PI / 180 / 2));
-        let yang = Math.atan(coords[1] * Math.tan(CONFIG.fieldOfView * Math.PI / 180 / 2));
+        let rang = Math.atan(coords[0] * Math.tan(CONFIG.fieldOfView * Math.PI / 180 / 2));
         // targetDiff = (targetLat - cameraLat)
-        // Similar main formula 3) Rad / sin(xang) = (Rad + camHeight) / sin(180 - targetDiff - xang)
-        // console.log(xang * 180 / Math.PI + " ??? " + yang * 180 / Math.PI );
-        // console.log(Math.asin((EarthRadiusEquator + CONFIG.cameraHeight) / EarthRadiusEquator * Math.sin(xang)) * 180 / Math.PI + ' --- ' +
-        //     Math.asin((EarthRadiusEquator + CONFIG.cameraHeight) / EarthRadiusEquator * Math.sin(yang)) * 180 / Math.PI);
-        let xlon = (Math.asin((EarthRadiusEquator + CONFIG.cameraHeight) / EarthRadiusEquator * Math.sin(xang)) - xang) * 180 / Math.PI;
-        let ylat = -(Math.asin((EarthRadiusEquator + CONFIG.cameraHeight) / EarthRadiusEquator * Math.sin(yang)) - yang) * 180 / Math.PI;
-        console.log("LAT " + (ylat + CONFIG.cameraLat )+ " LON " + (xlon + CONFIG.cameraLon));
+        // Similar main formula 3) Rad / sin(rang) = (Rad + camHeight) / sin(targetDiff + rang)
+        let targetDiff = (Math.asin((EarthRadiusEquator + CONFIG.cameraHeight) / EarthRadiusEquator * Math.sin(rang)) - rang) * 180 / Math.PI;
+        // console.log(coords[0] + " " + (coords[1]/Math.PI *180) + " - " + (rang / Math.PI * 180) + " " + targetDiff)
+        // this is only correct on cameraLat = 0! Here we need to transform spherical to another spherical coords
+        let xlon = Math.sin(coords[1]) * targetDiff / Math.cos(CONFIG.cameraLat / 180 * Math.PI);
+        let ylat = -Math.cos(coords[1]) * targetDiff;
+        console.log("LAT " + (ylat + CONFIG.cameraLat)+ " LON " + (xlon + CONFIG.cameraLon));
         return [ylat, xlon];
     }
     

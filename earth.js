@@ -1,22 +1,28 @@
-// +   TODO device independent constant vs pixel-perfect - check ?
-// + ? TODO autochange cam height on panning (different projection) ???
-// TODO Drag/drop: 1) Click is inprecise 2) add camera angle 
+// Think device independent constant vs pixel-perfect:
+//   1. Check perfect zoom doesn't exist on poles - non continous function
+//   2. Autochange cam height on panning (different projection)
 
+// TODO Drag/drop: add camera angle 
 // TODO LOD of details setting!
 // TODO autoload tiles on tilt / on pan
 // TODO Day/night shadow on Earth
+// TODO holes between inequal tiles (should be rectangular network)
+// TODO zoom into point (ZoomInPoint)
 // TODO allow to rotate camera
 
-// TODO Ellipse earth: 1) getDistance 2) problem with rotation (camera height)
-// TODO holes between inequal tiles (should be rectangular network)
-// TODO: think about pixel perfect zoom doesn't exist on poles (console.log)
+// FUTURE:
+// - Think about pixel perfect zoom doesn't exist on poles (console.log)
+// - Ellipse earth: 1) getDistance 2) problem with rotation (camera height)
+// - Drag/drop: 1) Click is inprecise (spherical -> spherical) 2) poles are not correct
 
 // ! OPENGL allows only texture power of 2 !
 const TilesCanvasSize = 8; // 8 -> 7x7 (1st row taken by ice / empty)
 // let GlCanvasSize = 1024; // < TilesCanvasSize * TileSize
 const GlCanvasSize = 768;
 
+// animations
 const RotateAroundCenter = true;
+const ZoomInPoint = false;
 
 // Global CONSTANTS
 // const EarthRadiusEquator = 6378.137;
@@ -97,10 +103,11 @@ function checkLongitude(longitude) {
         return longitude;
     }
     while (longitude <= MIN_LONGITUDE || longitude > MAX_LONGITUDE) {
+        let cf = Math.max(1, Math.round(Math.abs(longitude) / LONGITUDE_TURN));
         if (longitude < 0) {
-            longitude += LONGITUDE_TURN;
+            longitude += cf * LONGITUDE_TURN;
         } else {
-            longitude -= LONGITUDE_TURN;
+            longitude -= cf * LONGITUDE_TURN;
         }
     }
     return longitude;
@@ -926,8 +933,12 @@ function addListeners() {
             let newCoords = getDiffLatLonFromCoords(getClippedCoords(e));
             if (newCoords[0] && newCoords[1]) {
                 // console.log(e.clientX + " " + e.clientY + "--- " + mouseCoords + " " + newCoords);
-                CONFIG.cameraLat = mouseClickCenter[0] + (mouseCoords[0] - newCoords[0]); //(mouseCoords[1] - newCoords[1]) * CONFIG.cameraHeight / 400;
-                CONFIG.cameraLon = mouseClickCenter[1] + (mouseCoords[1] - newCoords[1]); //(mouseCoords[0] - newCoords[0]) * CONFIG.cameraHeight / 400; 
+                CONFIG.cameraLat = checkLongitude(mouseClickCenter[0] + (mouseCoords[0] - newCoords[0])); //(mouseCoords[1] - newCoords[1]) * CONFIG.cameraHeight / 400;
+                CONFIG.cameraLon = checkLongitude(mouseClickCenter[1] + (mouseCoords[1] - newCoords[1])); //(mouseCoords[0] - newCoords[0]) * CONFIG.cameraHeight / 400; 
+                if (CONFIG.cameraLat > 90 || CONFIG.cameraLat < -90) {
+                    CONFIG.cameraLat = (180 - CONFIG.cameraLat)  * (CONFIG.cameraLat < -90 ? -1 : 1);
+                    CONFIG.cameraLon = checkLongitude(CONFIG.cameraLon + 180);
+                }
                 updateTargetLocWithGivenCamera();
 
                 // this function could give non perfect zoom for the camera height cause it's potentiall doesn't exist
@@ -1001,7 +1012,18 @@ function addListeners() {
     });
     canvas.addEventListener('wheel', (e) => {
         const delta = -(0.05 * Math.floor(e.deltaY / 4));
-        setCamZoomValue(Math.max(0, Math.min(22, CONFIG.cameraZoom + delta)));
+        if (!ZoomInPoint) {
+            setCamZoomValue(Math.max(0, Math.min(22, CONFIG.cameraZoom + delta)));
+        } else {
+            // not ready
+            let mc = getDiffLatLonFromCoords(getClippedCoords(e));
+            if (mc[0] && mc[1]) {
+                let h = CONFIG.cameraHeight;
+                setCamZoomValue(Math.max(0, Math.min(22, CONFIG.cameraZoom + delta)));
+                CONFIG.cameraLat = CONFIG.cameraLat - mc[0] / h * CONFIG.cameraHeight;
+                CONFIG.cameraLon = CONFIG.cameraLon - mc[1] / h * CONFIG.cameraHeight;
+            }
+        }
     });
     camAngle.addEventListener('input', function () {
         const lookAtAngleMax = Math.asin(EarthRadiusEquator / (EarthRadiusEquator + CONFIG.cameraHeight));

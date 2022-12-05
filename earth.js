@@ -18,10 +18,14 @@
 // ! OPENGL allows only texture power of 2 !
 const TilesCanvasSize = 8; // 8 -> 7x7 (1st row taken by ice / empty)
 // let GlCanvasSize = 1024; // < TilesCanvasSize * TileSize
-const GlCanvasSize = 768;
+const GlCanvasSizeH = 558; // 768
+// const GlCanvasSizeW = GlCanvasSizeH;
+const GlCanvasSizeW = 992;
+
+
 
 // animations
-const RotateAroundCenter = true;
+const RotateAroundCenter = false;
 const ZoomInPoint = false;
 
 // Global CONSTANTS
@@ -49,7 +53,7 @@ const TileMaxZoom = 18;
 const TileSize = 256;
 
 // 2 - Plane z Near set in the middle between camera [0, eyePosition/ EarthRadiusEquator, 0] and Earth Look [0, 1, 0] 
-const PlaneZNear = 2; 
+const PlaneZNear = 10; 
 
 const CONFIG = {
     loadTexture: true,
@@ -59,11 +63,13 @@ const CONFIG = {
     tilesOnAndGridOff: true,
 
     cameraHeight: 20000, // insync with eyeZoom
-    cameraZoom : 2.5,
+    cameraZoom : 12.859,
 
-    cameraAngle: 0,
-    cameraLat: 52.37313,
-    cameraLon: 4.89875,
+    cameraAngle: 0 , // 180 * Math.PI,
+    cameraLat: 52.36895,
+    cameraLon: 9.72819, // 9.72819,
+    // cameraLat: 43.641667,
+    // cameraLon: -79.387222, // 9.72819,
 
     targetLat: 0,
     targetLon: 0,
@@ -176,8 +182,8 @@ function getPowZoom(zoom) {
 function main() {
     // GlCanvasSize = document.body.clientWidth / 2 > 1024 ? 1024 : 512ж
     const canvas = document.querySelector("#glcanvas");
-    canvas.width = GlCanvasSize;
-    canvas.height = GlCanvasSize;
+    canvas.width = GlCanvasSizeW;
+    canvas.height = GlCanvasSizeH;
     const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     // If we don't have a GL context, give up now
     if (!gl) {
@@ -779,7 +785,7 @@ function findPixelPerfectCameraHeightForZoom(zoom, fov, lat, lon) {
     const y = getTileNumberY(z, lat);
     let tileWidthKm = getDistance(getLatitudeFromTile(z, Math.floor(y)), getLongitudeFromTile(z, x), getLatitudeFromTile(z, Math.floor(y) + 1),
         getLongitudeFromTile(z, x)) / 1000;
-    let tilesToFitScreen = (GlCanvasSize / TileSize);
+    let tilesToFitScreen = (GlCanvasSizeH / TileSize);
     let screenInKm = (tileWidthKm * getPowZoom(z - zoom) * tilesToFitScreen);
     return (screenInKm / 2) / (Math.tan(fov * Math.PI / 180 / 2));
 }
@@ -905,11 +911,12 @@ function addListeners() {
         // targetDiff = (targetLat - cameraLat)
         // Similar main formula 3) Rad / sin(rang) = (Rad + camHeight) / sin(targetDiff + rang)
         let targetDiff = (Math.asin((EarthRadiusEquator + CONFIG.cameraHeight) / EarthRadiusEquator * Math.sin(rang)) - rang) * 180 / Math.PI;
-        // console.log(coords[0] + " " + (coords[1]/Math.PI *180) + " - " + (rang / Math.PI * 180) + " " + targetDiff)
+        // https://en.wikipedia.org/wiki/Great-circle_distance
+        // cos(targetDiff) = sin(cameraLat) * sin(ylat) + cos(cameraLat) * cos(ylat) * cos(xlon - cameraLon);
+        // let distOnEarth = getDistance(CONFIG.cameraLat, CONFIG.cameraLon, CONFIG.cameraLat + targetDiff, CONFIG.cameraLon);
         // this is only correct on cameraLat = 0! Here we need to transform spherical to another spherical coords
         let xlon = Math.sin(coords[1]) * targetDiff / Math.cos(CONFIG.cameraLat / 180 * Math.PI);
         let ylat = -Math.cos(coords[1]) * targetDiff;
-        console.log("LAT " + (ylat + CONFIG.cameraLat)+ " LON " + (xlon + CONFIG.cameraLon));
         return [ylat, xlon];
     }
     
@@ -917,6 +924,7 @@ function addListeners() {
         if (!mousedown) {
             mouseCoords = getDiffLatLonFromCoords(getClippedCoords(e));
             if (mouseCoords[0] && mouseCoords[1]) {
+                console.log("LAT " + (mouseCoords[0] + CONFIG.cameraLat) + " LON " + (mouseCoords[1] + CONFIG.cameraLon));
                 mousedown = true;
                 mouseClickCenter = [CONFIG.cameraLat, CONFIG.cameraLon];
             }

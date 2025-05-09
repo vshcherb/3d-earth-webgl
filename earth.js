@@ -18,14 +18,14 @@
 // ! OPENGL allows only texture power of 2 !
 const TilesCanvasSize = 8; // 8 -> 7x7 (1st row taken by ice / empty)
 // let GlCanvasSize = 1024; // < TilesCanvasSize * TileSize
-const GlCanvasSizeH = 558; // 768
+const GlCanvasSizeH = 750; // 768
 // const GlCanvasSizeW = GlCanvasSizeH;
-const GlCanvasSizeW = 992;
+const GlCanvasSizeW = 422;
 
 
 
 // animations
-const RotateAroundCenter = false;
+const RotateAroundCenter = true;
 const ZoomInPoint = false;
 
 // Global CONSTANTS
@@ -91,7 +91,7 @@ const CONFIG = {
     vertexZoom: 5,
     drawMode: 'TRIANGLES',
     
-    fieldOfView: 60, // degrees up to 180
+    fieldOfView: 33.5, // degrees up to 180
 };
 
 main();
